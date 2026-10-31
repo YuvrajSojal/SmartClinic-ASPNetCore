@@ -1,0 +1,89 @@
+@model IEnumerable<SmartClinic.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Appointments Management";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Smart Clinic - Appointment List</h2>
+        <a asp-action="Create" class="btn btn-primary">+ Schedule New Appointment</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (ViewBag.LastBookedId != null)
+    {
+        <div class="alert alert-info">
+            <strong>Session Info:</strong> Your last created Appointment ID in this session is #@ViewBag.LastBookedId.
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
+                                <p class="mb-2 fw-medium">No appointments scheduled yet.</p>
+                                <a asp-action="Create" class="btn btn-sm btn-outline-primary">Schedule the first appointment</a>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-semibold text-muted">#@item.AppointmentId</td>
+                                <td class="fw-medium">@item.Patient?.FullName</td>
+                                <td>@item.Doctor?.FullName</td>
+                                <td>@item.AppointmentDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    <span class="badge @(item.Status == "Confirmed" ? "bg-success" : item.Status == "Cancelled" ? "bg-danger" : "bg-warning text-dark")">
+                                        @item.Status
+                                    </span>
+                                </td>
+                                <td>@(string.IsNullOrWhiteSpace(item.Notes) ? "-" : item.Notes)</td>
+                                <td>
+                                    @if (item.Status != "Cancelled")
+                                    {
+                                        <form asp-action="Cancel" asp-route-id="@item.AppointmentId" method="post" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to cancel this appointment?');">
+                                                <i class="bi bi-x-circle me-1"></i>Cancel
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Cancelled</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
